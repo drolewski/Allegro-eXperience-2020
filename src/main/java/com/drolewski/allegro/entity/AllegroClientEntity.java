@@ -31,12 +31,4 @@ public class AllegroClientEntity {
     private String login;
 
     private String address;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="name_surname")
-    private PersonClientEntity owner;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="nip")
-    private CompanyClientEntity company;
 }
