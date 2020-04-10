@@ -26,30 +26,30 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients{
     }
 
     @Override
-    public void saveDeduplicatedClients(List<DeduplicatedClientsEntity> deduplicatedClients) {
-        List<AllegroClientEntity> allegroClients = this.allegroClientService.getRawAllegroClients();
-        DeduplicatedClientsEntity deduplicatedClientsEntity;
-        for(AllegroClientEntity client: allegroClients){
-            if(client.getNip() == null){
-                deduplicatedClientsEntity = new DeduplicatedClientsEntity();
-                deduplicatedClientsEntity.setId(client.getId());
-                deduplicatedClientsEntity.setNameSurname(client.getNameSurname());
-                deduplicatedClientsEntity.setNip(client.getNip());
-                deduplicatedClientsEntity.setCompanyName(client.getCompanyName());
-                deduplicatedClientsEntity.setEmail(client.getEmail());
-                deduplicatedClientsEntity.setPhoneNumber1(client.getPhoneNumber1());
-                deduplicatedClientsEntity.setPhoneNumber2(client.getPhoneNumber2());
-                deduplicatedClientsEntity.setLogin(client.getLogin());
-                deduplicatedClientsEntity.setAddress(client.getAddress());
-                deduplicatedClientDAO.saveDeduplicated(deduplicatedClientsEntity);
-            }else{
-
-            }
-        }
+    public List<DeduplicatedClientsEntity> getDeduplicatedClientsByNIP(String nip) {
+        return this.deduplicatedClientDAO.getClientsByNIP(nip);
     }
 
     @Override
-    public List<DeduplicatedClientsEntity> getDeduplicatedClientsByNIP(String nip) {
-        return this.deduplicatedClientDAO.getClientsByNIP(nip);
+    public List<DeduplicatedClientsEntity> importClients() {
+        List<AllegroClientEntity> allegroClients = this.allegroClientService.getRawAllegroClients();
+        for(AllegroClientEntity client: allegroClients){
+            if(client.getNip() == null){
+                //company clients
+                this.deduplicateCompanyClient(client);
+            }else{
+                //individual
+            }
+        }
+        return this.deduplicatedClientDAO.getDeduplicatedClients();
+    }
+
+    @Override
+    public void deduplicateCompanyClient(AllegroClientEntity client){
+       if(this.deduplicatedClientDAO.isCompanyClientExist(client)){ //istnieje klient z takim nipem
+           this.deduplicatedClientDAO.updateOrAddClient(client);
+       }else{
+           this.deduplicatedClientDAO.addCompanyClient(client);
+       }
     }
 }

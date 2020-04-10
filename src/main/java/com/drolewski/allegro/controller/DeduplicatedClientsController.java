@@ -22,4 +22,9 @@ public class DeduplicatedClientsController {
     public List<DeduplicatedClientsEntity> getClientsByNip(@PathVariable String nip){
         return this.deduplicatedClients.getDeduplicatedClientsByNIP(nip);
     }
+
+    @GetMapping("/deduplicate")
+    public List<DeduplicatedClientsEntity> importAndDeduplicateClients(){
+        return this.deduplicatedClients.importClients();
+    }
 }

@@ -1,12 +1,16 @@
 package com.drolewski.allegro.entity;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="allegro_client_deduplicated")
 public class DeduplicatedClientsEntity{
