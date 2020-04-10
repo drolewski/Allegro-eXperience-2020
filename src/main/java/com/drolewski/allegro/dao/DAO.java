@@ -11,7 +11,7 @@ public interface DAO<T> {
     List<DeduplicatedClientsEntity> getClientsByNIP(String nip);
     DeduplicatedClientsEntity getClientByEmail(String email);
     DeduplicatedClientsEntity getClientById(Integer id);
-    DeduplicatedClientsEntity getClientByLogin(String login);
+    List<DeduplicatedClientsEntity> getClientsByLogin(String login);
     List<DeduplicatedClientsEntity> getDeduplicatedClients();
 
     boolean isCompanyClientExist(AllegroClientEntity client);
@@ -23,4 +23,6 @@ public interface DAO<T> {
     List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId();
 
     void saveAllegroId(DeduplicatedClientsEntity deduplicatedClient, Integer allegroId);
+
+    void deleteDuplicate(T deduplicatedClientCheck);
 }

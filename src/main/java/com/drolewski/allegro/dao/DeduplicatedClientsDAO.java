@@ -50,8 +50,10 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientsEntity> {
     }
 
     @Override
-    public DeduplicatedClientsEntity getClientByLogin(String login) {
-        return null;
+    public List<DeduplicatedClientsEntity> getClientsByLogin(String login) {
+        return entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE login LIKE :clientLogin")
+                .setParameter("clientLogin", login)
+                .getResultList();
     }
 
     @Override
@@ -136,5 +138,13 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientsEntity> {
     public void saveAllegroId(DeduplicatedClientsEntity deduplicatedClient, Integer allegroId) {
         deduplicatedClient.setAllegroId(allegroId);
         entityManager.persist(deduplicatedClient);
+    }
+
+    @Transactional
+    @Override
+    public void deleteDuplicate(DeduplicatedClientsEntity deduplicatedClientCheck) {
+        if(entityManager.contains(deduplicatedClientCheck)){
+            entityManager.remove(deduplicatedClientCheck);
+        }
     }
 }

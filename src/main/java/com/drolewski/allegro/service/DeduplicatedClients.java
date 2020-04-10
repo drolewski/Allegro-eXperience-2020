@@ -11,4 +11,5 @@ public interface DeduplicatedClients {
     List<DeduplicatedClientsEntity> importClients();
     void deduplicateCompanyClient(AllegroClientEntity clients);
     void updateAllegroId();
+    void deduplicateTableEntities();
 }

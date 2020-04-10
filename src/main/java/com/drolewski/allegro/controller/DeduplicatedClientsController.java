@@ -23,8 +23,18 @@ public class DeduplicatedClientsController {
         return this.deduplicatedClients.getDeduplicatedClientsByNIP(nip);
     }
 
+    @GetMapping("")
+    public List<DeduplicatedClientsEntity> getAllList(){
+        return this.deduplicatedClients.getAllDeduplicatedClients();
+    }
+
     @GetMapping("/deduplicate")
     public List<DeduplicatedClientsEntity> importAndDeduplicateClients(){
         return this.deduplicatedClients.importClients();
+    }
+
+    @DeleteMapping("/remove")
+    public void deleteDuplicate(){
+        this.deduplicatedClients.deduplicateTableEntities();
     }
 }
