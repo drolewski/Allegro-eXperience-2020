@@ -19,4 +19,8 @@ public interface DAO<T> {
     void updateOrAddClient(AllegroClientEntity client);
 
     void addCompanyClient(AllegroClientEntity client);
+
+    List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId();
+
+    void saveAllegroId(DeduplicatedClientsEntity deduplicatedClient, Integer allegroId);
 }

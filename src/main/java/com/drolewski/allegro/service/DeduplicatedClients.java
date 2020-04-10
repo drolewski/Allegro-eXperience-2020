@@ -10,4 +10,5 @@ public interface DeduplicatedClients {
     List<DeduplicatedClientsEntity> getDeduplicatedClientsByNIP(String nip);
     List<DeduplicatedClientsEntity> importClients();
     void deduplicateCompanyClient(AllegroClientEntity clients);
+    void updateAllegroId();
 }

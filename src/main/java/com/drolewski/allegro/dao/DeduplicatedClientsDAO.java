@@ -124,4 +124,17 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientsEntity> {
 
         logger.info("New Client without parent: " + newDeduplicatedClient.toString());
     }
+
+    @Override
+    public List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId() {
+        return entityManager.createQuery("SELECT login FROM DeduplicatedClientsEntity where allegroId = null")
+                .getResultList();
+    }
+
+    @Transactional
+    @Override
+    public void saveAllegroId(DeduplicatedClientsEntity deduplicatedClient, Integer allegroId) {
+        deduplicatedClient.setAllegroId(allegroId);
+        entityManager.persist(deduplicatedClient);
+    }
 }

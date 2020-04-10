@@ -56,4 +56,23 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients{
            this.deduplicatedClientDAO.addCompanyClient(client);
        }
     }
+
+    @Override
+    public void updateAllegroId() { //first step of deduplication
+        List<DeduplicatedClientsEntity> deduplicatedClientsEntities =
+                this.deduplicatedClientDAO.getAccountsWithoutAllegroId();
+        List<AllegroClientEntity> allegroClients =
+                this.allegroClientService.getRawAllegroClients();
+
+        for(DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities){
+            for(AllegroClientEntity allegroClient : allegroClients){
+                if(deduplicatedClient.getLogin().equals(allegroClient.getLogin())){
+                    this.deduplicatedClientDAO.saveAllegroId(deduplicatedClient, allegroClient.getId());
+                }
+            }
+        }
+    }
+
+
+
 }
