@@ -9,13 +9,14 @@ import javax.persistence.*;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name="allegro_client_deduplicated")
 public class DeduplicatedClientsEntity{
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
+    private Integer allegroId;
 
     @Column(name = "name_surname")
     private String nameSurname;
@@ -45,4 +46,21 @@ public class DeduplicatedClientsEntity{
     @OneToOne
     @JoinColumn(name = "individual_parent")
     private DeduplicatedClientsEntity individualParent;
+
+    public DeduplicatedClientsEntity(Integer allegroId, String nameSurname, String nip, String companyName,
+                                     String email, String phoneNumber1, String phoneNumber2, String login,
+                                     String address, DeduplicatedClientsEntity companyParent,
+                                     DeduplicatedClientsEntity individualParent) {
+        this.allegroId = allegroId;
+        this.nameSurname = nameSurname;
+        this.nip = nip;
+        this.companyName = companyName;
+        this.email = email;
+        this.phoneNumber1 = phoneNumber1;
+        this.phoneNumber2 = phoneNumber2;
+        this.login = login;
+        this.address = address;
+        this.companyParent = companyParent;
+        this.individualParent = individualParent;
+    }
 }
