@@ -82,13 +82,14 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientsEntity> {
         DeduplicatedClientsEntity parent = null;
         boolean updated = false;
         for (DeduplicatedClientsEntity clientFromDb : queryResultList){
-            if(clientFromDb.getId().equals(client.getId())) {
+            if(clientFromDb.getAllegroId().equals(client.getId())) {
                 clientFromDb.setNameSurname(client.getNameSurname());
                 clientFromDb.setCompanyName(client.getCompanyName());
                 clientFromDb.setPhoneNumber1(client.getPhoneNumber1());
                 clientFromDb.setPhoneNumber2(client.getPhoneNumber2());
                 clientFromDb.setAddress(client.getAddress());
                 clientFromDb.setLogin(client.getLogin());
+                clientFromDb.setAllegroId(client.getId());
 
                 logger.info("Updated Client: " + clientFromDb.toString());
                 updated = true;
