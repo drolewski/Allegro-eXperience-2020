@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name="allegro_client_deduplicated")
 public class DeduplicatedClientsEntity{
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
 
     private Integer allegroId;
@@ -62,5 +62,8 @@ public class DeduplicatedClientsEntity{
         this.address = address;
         this.companyParent = companyParent;
         this.individualParent = individualParent;
+    }
+
+    public DeduplicatedClientsEntity() {
     }
 }
