@@ -4,18 +4,41 @@ package com.drolewski.allegro.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name="allegro_client_deduplicated")
-public class DeduplicatedClientsEntity extends AllegroClientEntity{
-    @ManyToOne
-    @JoinColumn(name = "id")
-    @Column(name = "company_parent")
-    private Integer companyParentId;
+public class DeduplicatedClientsEntity{
+    @Id
+    private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
-    @Column(name = "individual_parent")
-    private Integer individualParentId;
+    @Column(name = "name_surname", insertable = false, updatable = false)
+    private String nameSurname;
+
+    @Column(insertable = false, updatable = false)
+    private String nip;
+
+    @Column(name = "company_Name")
+    private String companyName;
+
+    private String email;
+
+    @Column(name = "phone_Number1")
+    private String phoneNumber1;
+
+    @Column(name = "phone_Number2")
+    private String phoneNumber2;
+
+    private String login;
+
+    private String address;
+
+    @OneToOne
+    @JoinColumn(name = "company_parent")
+    private DeduplicatedClientsEntity companyParent;
+
+    @OneToOne
+    @JoinColumn(name = "individual_parent")
+    private DeduplicatedClientsEntity individualParent;
 }
