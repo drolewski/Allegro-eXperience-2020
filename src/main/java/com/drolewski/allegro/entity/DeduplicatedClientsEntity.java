@@ -17,10 +17,10 @@ public class DeduplicatedClientsEntity{
     @Id
     private Integer id;
 
-    @Column(name = "name_surname", insertable = false, updatable = false)
+    @Column(name = "name_surname")
     private String nameSurname;
 
-    @Column(insertable = false, updatable = false)
+    @Column
     private String nip;
 
     @Column(name = "company_Name")
