@@ -8,16 +8,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLDataException;
 import java.util.List;
 
 @Service
-public class DeduplicatedClientsImpl implements DeduplicatedClients{
+public class DeduplicatedClientsImpl implements DeduplicatedClients {
     final Logger logger = LoggerFactory.getLogger(DeduplicatedClientsImpl.class);
 
     private final AllegroClientService allegroClientService;
     private final DAO<DeduplicatedClientsEntity> deduplicatedClientDAO;
 
-   @Autowired
+    @Autowired
     public DeduplicatedClientsImpl(AllegroClientService allegroClientService, DAO<DeduplicatedClientsEntity> deduplicatedClientDAO) {
         this.allegroClientService = allegroClientService;
         this.deduplicatedClientDAO = deduplicatedClientDAO;
@@ -35,12 +36,14 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients{
 
     @Override
     public List<DeduplicatedClientsEntity> importClients() {
+        this.deduplicateTableEntities();
+        this.updateAllegroId();
         List<AllegroClientEntity> allegroClients = this.allegroClientService.getRawAllegroClients();
-        for(AllegroClientEntity client: allegroClients){
-            if(client.getNip() != null){
+        for (AllegroClientEntity client : allegroClients) {
+            if (client.getNip() != null) {
                 logger.info("Company client: " + client.getId());
                 this.deduplicateCompanyClient(client);
-            }else{
+            } else {
                 logger.info("Individual client: " + client.getId());
             }
         }
@@ -48,13 +51,17 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients{
     }
 
     @Override
-    public void deduplicateCompanyClient(AllegroClientEntity client){
-       if(this.deduplicatedClientDAO.isCompanyClientExist(client)){
-           logger.info("Exist parent client");
-           this.deduplicatedClientDAO.updateOrAddClient(client);
-       }else{
-           this.deduplicatedClientDAO.addCompanyClient(client);
-       }
+    public void deduplicateCompanyClient(AllegroClientEntity client) {
+        if (this.deduplicatedClientDAO.isCompanyClientExist(client)) {
+            logger.info("Exist parent client");
+            this.deduplicatedClientDAO.updateOrAddClient(client);
+        } else {
+            try {
+                this.deduplicatedClientDAO.addCompanyClient(client);
+            }catch (SQLDataException e){
+                logger.info(e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -64,9 +71,9 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients{
         List<AllegroClientEntity> allegroClients =
                 this.allegroClientService.getRawAllegroClients();
 
-        for(DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities){
-            for(AllegroClientEntity allegroClient : allegroClients){
-                if(deduplicatedClient.getLogin().equals(allegroClient.getLogin())){
+        for (DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities) {
+            for (AllegroClientEntity allegroClient : allegroClients) {
+                if (deduplicatedClient.getLogin().equals(allegroClient.getLogin())) {
                     this.deduplicatedClientDAO.saveAllegroId(deduplicatedClient, allegroClient.getId());
                 }
             }
@@ -78,9 +85,9 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients{
         List<DeduplicatedClientsEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getDeduplicatedClients();
         List<DeduplicatedClientsEntity> listToCheck;
-        for(DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities){
+        for (DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities) {
             listToCheck = this.deduplicatedClientDAO.getClientsByLogin(deduplicatedClient.getLogin());
-            if(listToCheck.size() > 1) {
+            if (listToCheck.size() > 1) {
                 for (DeduplicatedClientsEntity deduplicatedClientCheck : listToCheck.subList(1, listToCheck.size())) {
                     this.deduplicatedClientDAO.deleteDuplicate(deduplicatedClientCheck);
                 }

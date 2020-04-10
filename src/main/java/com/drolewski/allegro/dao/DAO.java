@@ -3,6 +3,7 @@ package com.drolewski.allegro.dao;
 import com.drolewski.allegro.entity.AllegroClientEntity;
 import com.drolewski.allegro.entity.DeduplicatedClientsEntity;
 
+import java.sql.SQLDataException;
 import java.util.List;
 
 public interface DAO<T> {
@@ -18,7 +19,7 @@ public interface DAO<T> {
 
     void updateOrAddClient(AllegroClientEntity client);
 
-    void addCompanyClient(AllegroClientEntity client);
+    void addCompanyClient(AllegroClientEntity client) throws SQLDataException;
 
     List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId();
 

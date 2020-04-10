@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.sql.SQLDataException;
 import java.util.List;
 
 @Component
@@ -81,7 +82,8 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientsEntity> {
         DeduplicatedClientsEntity parent = null;
         boolean updated = false;
         for (DeduplicatedClientsEntity clientFromDb : queryResultList) {
-            if (clientFromDb.getAllegroId().equals(client.getId()) && clientFromDb.getLogin().equals(client.getLogin())) {
+            if (clientFromDb.getAllegroId().equals(client.getId()) &&
+                    clientFromDb.getCompanyName().equals(client.getCompanyName())) {
                 clientFromDb.setNameSurname(client.getNameSurname());
                 clientFromDb.setCompanyName(client.getCompanyName());
                 clientFromDb.setPhoneNumber1(client.getPhoneNumber1());
@@ -120,22 +122,29 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientsEntity> {
 
     @Transactional
     @Override
-    public void addCompanyClient(AllegroClientEntity client) {
-        DeduplicatedClientsEntity newDeduplicatedClient =
-                new DeduplicatedClientsEntity(
-                        client.getId(), client.getNameSurname(), client.getNip(),
-                        client.getCompanyName(), client.getEmail(), client.getPhoneNumber1(),
-                        client.getPhoneNumber2(), client.getLogin(), client.getAddress(),
-                        null, null
-                );
-        entityManager.persist(newDeduplicatedClient);
+    public void addCompanyClient(AllegroClientEntity client) throws SQLDataException {
+        int resultSize = entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE allegro_id = :clientAllegroId")
+                .setParameter("clientAllegroId",client.getId())
+                .getResultList().size();
+        if (resultSize == 0) {
+            DeduplicatedClientsEntity newDeduplicatedClient =
+                    new DeduplicatedClientsEntity(
+                            client.getId(), client.getNameSurname(), client.getNip(),
+                            client.getCompanyName(), client.getEmail(), client.getPhoneNumber1(),
+                            client.getPhoneNumber2(), client.getLogin(), client.getAddress(),
+                            null, null
+                    );
+            entityManager.persist(newDeduplicatedClient);
 
-        logger.info("New Client without parent: " + newDeduplicatedClient.toString());
+            logger.info("New Client without parent: " + newDeduplicatedClient.toString());
+            return;
+        }
+        throw new SQLDataException("Constraints Error: Allegro Client Id already exists in DB");
     }
 
     @Override
     public List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId() {
-        return entityManager.createQuery("SELECT login FROM DeduplicatedClientsEntity where allegroId = null")
+        return entityManager.createQuery("FROM DeduplicatedClientsEntity where allegroId = null")
                 .getResultList();
     }
 
