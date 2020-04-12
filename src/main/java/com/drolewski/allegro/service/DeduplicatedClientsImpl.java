@@ -36,18 +36,32 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
 
     @Override
     public List<DeduplicatedClientsEntity> importClients() {
-        this.deduplicateTableEntities();
         this.updateAllegroId();
+        this.deduplicateTableEntities();
         List<AllegroClientEntity> allegroClients = this.allegroClientService.getRawAllegroClients();
         for (AllegroClientEntity client : allegroClients) {
             if (client.getNip() != null) {
                 logger.info("Company client: " + client.getId());
                 this.deduplicateCompanyClient(client);
-            } else {
-                logger.info("Individual client: " + client.getId());
+            }else {
+                logger.info("Individual client: " + client.toString());
+                this.deduplicatedIndividualClient(client);
             }
         }
         return this.deduplicatedClientDAO.getDeduplicatedClients();
+    }
+
+    private void deduplicatedIndividualClient(AllegroClientEntity client) {
+        if(this.deduplicatedClientDAO.isIndividualClientExist(client)){
+            logger.info("Exist parent client");
+            this.deduplicatedClientDAO.updateOrAddIndividualClient(client);
+        }else{
+            try {
+                this.deduplicatedClientDAO.addNewCRMClient(client);
+            }catch (SQLDataException e){
+                logger.info(e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -57,7 +71,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
             this.deduplicatedClientDAO.updateOrAddClient(client);
         } else {
             try {
-                this.deduplicatedClientDAO.addCompanyClient(client);
+                this.deduplicatedClientDAO.addNewCRMClient(client);
             }catch (SQLDataException e){
                 logger.info(e.getMessage());
             }

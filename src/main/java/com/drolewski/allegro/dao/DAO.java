@@ -19,11 +19,17 @@ public interface DAO<T> {
 
     void updateOrAddClient(AllegroClientEntity client);
 
-    void addCompanyClient(AllegroClientEntity client) throws SQLDataException;
+    void addNewCRMClient(AllegroClientEntity client) throws SQLDataException;
 
     List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId();
 
     void saveAllegroId(DeduplicatedClientsEntity deduplicatedClient, Integer allegroId);
 
     void deleteDuplicate(T deduplicatedClientCheck);
+
+    boolean isIndividualClientExist(AllegroClientEntity client);
+
+    void updateOrAddIndividualClient(AllegroClientEntity client);
+
+    DeduplicatedClientsEntity findIndividualParent(AllegroClientEntity client);
 }
