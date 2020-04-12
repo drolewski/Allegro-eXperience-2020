@@ -1,17 +1,14 @@
 package com.drolewski.allegro.entity;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Data
 @Entity
 @Table(name="allegro_client_deduplicated")
-public class DeduplicatedClientsEntity{
+public class DeduplicatedClientEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
@@ -41,16 +38,16 @@ public class DeduplicatedClientsEntity{
 
     @OneToOne
     @JoinColumn(name = "company_parent")
-    private DeduplicatedClientsEntity companyParent;
+    private DeduplicatedClientEntity companyParent;
 
     @OneToOne
     @JoinColumn(name = "individual_parent")
-    private DeduplicatedClientsEntity individualParent;
+    private DeduplicatedClientEntity individualParent;
 
-    public DeduplicatedClientsEntity(Integer allegroId, String nameSurname, String nip, String companyName,
-                                     String email, String phoneNumber1, String phoneNumber2, String login,
-                                     String address, DeduplicatedClientsEntity companyParent,
-                                     DeduplicatedClientsEntity individualParent) {
+    public DeduplicatedClientEntity(Integer allegroId, String nameSurname, String nip, String companyName,
+                                    String email, String phoneNumber1, String phoneNumber2, String login,
+                                    String address, DeduplicatedClientEntity companyParent,
+                                    DeduplicatedClientEntity individualParent) {
         this.allegroId = allegroId;
         this.nameSurname = nameSurname;
         this.nip = nip;
@@ -64,6 +61,6 @@ public class DeduplicatedClientsEntity{
         this.individualParent = individualParent;
     }
 
-    public DeduplicatedClientsEntity() {
+    public DeduplicatedClientEntity() {
     }
 }

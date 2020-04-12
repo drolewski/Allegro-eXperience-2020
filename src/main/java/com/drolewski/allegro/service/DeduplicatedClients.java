@@ -1,14 +1,14 @@
 package com.drolewski.allegro.service;
 
 import com.drolewski.allegro.entity.AllegroClientEntity;
-import com.drolewski.allegro.entity.DeduplicatedClientsEntity;
+import com.drolewski.allegro.entity.DeduplicatedClientEntity;
 
 import java.util.List;
 
 public interface DeduplicatedClients {
-    List<DeduplicatedClientsEntity> getAllDeduplicatedClients();
-    List<DeduplicatedClientsEntity> getDeduplicatedClientsByNIP(String nip);
-    List<DeduplicatedClientsEntity> importClients();
+    List<DeduplicatedClientEntity> getAllDeduplicatedClients();
+    List<DeduplicatedClientEntity> getDeduplicatedClientsByNIP(String nip);
+    List<DeduplicatedClientEntity> importClients();
     void deduplicateCompanyClient(AllegroClientEntity clients);
     void updateAllegroId();
     void deduplicateTableEntities();

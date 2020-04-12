@@ -2,7 +2,7 @@ package com.drolewski.allegro.service;
 
 import com.drolewski.allegro.dao.DAO;
 import com.drolewski.allegro.entity.AllegroClientEntity;
-import com.drolewski.allegro.entity.DeduplicatedClientsEntity;
+import com.drolewski.allegro.entity.DeduplicatedClientEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,26 +16,26 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
     final Logger logger = LoggerFactory.getLogger(DeduplicatedClientsImpl.class);
 
     private final AllegroClientService allegroClientService;
-    private final DAO<DeduplicatedClientsEntity> deduplicatedClientDAO;
+    private final DAO<DeduplicatedClientEntity> deduplicatedClientDAO;
 
     @Autowired
-    public DeduplicatedClientsImpl(AllegroClientService allegroClientService, DAO<DeduplicatedClientsEntity> deduplicatedClientDAO) {
+    public DeduplicatedClientsImpl(AllegroClientService allegroClientService, DAO<DeduplicatedClientEntity> deduplicatedClientDAO) {
         this.allegroClientService = allegroClientService;
         this.deduplicatedClientDAO = deduplicatedClientDAO;
     }
 
     @Override
-    public List<DeduplicatedClientsEntity> getAllDeduplicatedClients() {
+    public List<DeduplicatedClientEntity> getAllDeduplicatedClients() {
         return null;
     }
 
     @Override
-    public List<DeduplicatedClientsEntity> getDeduplicatedClientsByNIP(String nip) {
+    public List<DeduplicatedClientEntity> getDeduplicatedClientsByNIP(String nip) {
         return this.deduplicatedClientDAO.getClientsByNIP(nip);
     }
 
     @Override
-    public List<DeduplicatedClientsEntity> importClients() {
+    public List<DeduplicatedClientEntity> importClients() {
         this.updateAllegroId();
         this.deduplicateTableEntities();
         List<AllegroClientEntity> allegroClients = this.allegroClientService.getRawAllegroClients();
@@ -80,12 +80,12 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
 
     @Override
     public void updateAllegroId() { //second step of deduplication
-        List<DeduplicatedClientsEntity> deduplicatedClientsEntities =
+        List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getAccountsWithoutAllegroId();
         List<AllegroClientEntity> allegroClients =
                 this.allegroClientService.getRawAllegroClients();
 
-        for (DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities) {
+        for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
             for (AllegroClientEntity allegroClient : allegroClients) {
                 if (deduplicatedClient.getLogin().equals(allegroClient.getLogin())) {
                     this.deduplicatedClientDAO.saveAllegroId(deduplicatedClient, allegroClient.getId());
@@ -96,13 +96,13 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
 
     @Override
     public void deduplicateTableEntities() { //first step of deduplication
-        List<DeduplicatedClientsEntity> deduplicatedClientsEntities =
+        List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getDeduplicatedClients();
-        List<DeduplicatedClientsEntity> listToCheck;
-        for (DeduplicatedClientsEntity deduplicatedClient : deduplicatedClientsEntities) {
+        List<DeduplicatedClientEntity> listToCheck;
+        for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
             listToCheck = this.deduplicatedClientDAO.getClientsByLogin(deduplicatedClient.getLogin());
             if (listToCheck.size() > 1) {
-                for (DeduplicatedClientsEntity deduplicatedClientCheck : listToCheck.subList(1, listToCheck.size())) {
+                for (DeduplicatedClientEntity deduplicatedClientCheck : listToCheck.subList(1, listToCheck.size())) {
                     this.deduplicatedClientDAO.deleteDuplicate(deduplicatedClientCheck);
                 }
             }

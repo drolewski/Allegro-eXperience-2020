@@ -1,19 +1,19 @@
 package com.drolewski.allegro.dao;
 
 import com.drolewski.allegro.entity.AllegroClientEntity;
-import com.drolewski.allegro.entity.DeduplicatedClientsEntity;
+import com.drolewski.allegro.entity.DeduplicatedClientEntity;
 
 import java.sql.SQLDataException;
 import java.util.List;
 
 public interface DAO<T> {
-    void saveDeduplicated(DeduplicatedClientsEntity deduplicatedClientsEntity);
-    List<DeduplicatedClientsEntity> getClientsByNameSurname(String nameSurname);
-    List<DeduplicatedClientsEntity> getClientsByNIP(String nip);
-    DeduplicatedClientsEntity getClientByEmail(String email);
-    DeduplicatedClientsEntity getClientById(Integer id);
-    List<DeduplicatedClientsEntity> getClientsByLogin(String login);
-    List<DeduplicatedClientsEntity> getDeduplicatedClients();
+    void saveDeduplicated(DeduplicatedClientEntity deduplicatedClientEntity);
+    List<DeduplicatedClientEntity> getClientsByNameSurname(String nameSurname);
+    List<DeduplicatedClientEntity> getClientsByNIP(String nip);
+    DeduplicatedClientEntity getClientByEmail(String email);
+    DeduplicatedClientEntity getClientById(Integer id);
+    List<DeduplicatedClientEntity> getClientsByLogin(String login);
+    List<DeduplicatedClientEntity> getDeduplicatedClients();
 
     boolean isCompanyClientExist(AllegroClientEntity client);
 
@@ -21,9 +21,9 @@ public interface DAO<T> {
 
     void addNewCRMClient(AllegroClientEntity client) throws SQLDataException;
 
-    List<DeduplicatedClientsEntity> getAccountsWithoutAllegroId();
+    List<DeduplicatedClientEntity> getAccountsWithoutAllegroId();
 
-    void saveAllegroId(DeduplicatedClientsEntity deduplicatedClient, Integer allegroId);
+    void saveAllegroId(DeduplicatedClientEntity deduplicatedClient, Integer allegroId);
 
     void deleteDuplicate(T deduplicatedClientCheck);
 
@@ -31,5 +31,5 @@ public interface DAO<T> {
 
     void updateOrAddIndividualClient(AllegroClientEntity client);
 
-    DeduplicatedClientsEntity findIndividualParent(AllegroClientEntity client);
+    DeduplicatedClientEntity findIndividualParent(AllegroClientEntity client);
 }

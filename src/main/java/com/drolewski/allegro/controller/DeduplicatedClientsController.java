@@ -1,6 +1,6 @@
 package com.drolewski.allegro.controller;
 
-import com.drolewski.allegro.entity.DeduplicatedClientsEntity;
+import com.drolewski.allegro.entity.DeduplicatedClientEntity;
 import com.drolewski.allegro.service.DeduplicatedClients;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +19,17 @@ public class DeduplicatedClientsController {
     }
 
     @GetMapping("/{nip}")
-    public List<DeduplicatedClientsEntity> getClientsByNip(@PathVariable String nip){
+    public List<DeduplicatedClientEntity> getClientsByNip(@PathVariable String nip){
         return this.deduplicatedClients.getDeduplicatedClientsByNIP(nip);
     }
 
     @GetMapping("")
-    public List<DeduplicatedClientsEntity> getAllList(){
+    public List<DeduplicatedClientEntity> getAllList(){
         return this.deduplicatedClients.getAllDeduplicatedClients();
     }
 
     @GetMapping("/deduplicate")
-    public List<DeduplicatedClientsEntity> importAndDeduplicateClients(){
+    public List<DeduplicatedClientEntity> importAndDeduplicateClients(){
         return this.deduplicatedClients.importClients();
     }
 
