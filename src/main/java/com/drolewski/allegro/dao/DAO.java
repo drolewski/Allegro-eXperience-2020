@@ -7,13 +7,13 @@ import java.sql.SQLDataException;
 import java.util.List;
 
 public interface DAO<T> {
-    void saveDeduplicated(DeduplicatedClientEntity deduplicatedClientEntity);
-    List<DeduplicatedClientEntity> getClientsByNameSurname(String nameSurname);
-    List<DeduplicatedClientEntity> getClientsByNIP(String nip);
-    DeduplicatedClientEntity getClientByEmail(String email);
-    DeduplicatedClientEntity getClientById(Integer id);
-    List<DeduplicatedClientEntity> getClientsByLogin(String login);
-    List<DeduplicatedClientEntity> getDeduplicatedClients();
+    void saveDeduplicated(T deduplicatedClientEntity);
+    List<T> getClientsByNameSurname(String nameSurname);
+    List<T> getClientsByNIP(String nip);
+    T getClientByEmail(String email);
+    T getClientById(Integer id);
+    List<T> getClientsByLogin(String login);
+    List<T> getDeduplicatedClients();
 
     boolean isCompanyClientExist(AllegroClientEntity client);
 
@@ -21,9 +21,9 @@ public interface DAO<T> {
 
     void addNewCRMClient(AllegroClientEntity client) throws SQLDataException;
 
-    List<DeduplicatedClientEntity> getAccountsWithoutAllegroId();
+    List<T> getAccountsWithoutAllegroId();
 
-    void saveAllegroId(DeduplicatedClientEntity deduplicatedClient, Integer allegroId);
+    void saveAllegroId(T deduplicatedClient, Integer allegroId);
 
     void deleteDuplicate(T deduplicatedClientCheck);
 
@@ -31,5 +31,5 @@ public interface DAO<T> {
 
     void updateOrAddIndividualClient(AllegroClientEntity client);
 
-    DeduplicatedClientEntity findIndividualParent(AllegroClientEntity client);
+    T findIndividualParent(AllegroClientEntity client);
 }
