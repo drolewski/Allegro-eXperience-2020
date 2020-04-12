@@ -48,7 +48,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
                 this.deduplicatedIndividualClient(client);
             }
         }
-        return this.deduplicatedClientDAO.getDeduplicatedClients();
+        return this.deduplicatedClientDAO.getListOfDeduplicatedClients();
     }
 
     private void deduplicatedIndividualClient(AllegroClientEntity client) {
@@ -68,7 +68,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
     public void deduplicateCompanyClient(AllegroClientEntity client) {
         if (this.deduplicatedClientDAO.isCompanyClientExist(client)) {
             logger.info("Exist parent client");
-            this.deduplicatedClientDAO.updateOrAddClient(client);
+            this.deduplicatedClientDAO.updateOrAddCompanyClient(client);
         } else {
             try {
                 this.deduplicatedClientDAO.addNewCRMClient(client);
@@ -81,14 +81,14 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
     @Override
     public void updateAllegroId() { //second step of deduplication
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
-                this.deduplicatedClientDAO.getAccountsWithoutAllegroId();
+                this.deduplicatedClientDAO.getAccountsWithNULLAllegroId();
         List<AllegroClientEntity> allegroClients =
                 this.allegroClientService.getRawAllegroClients();
 
         for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
             for (AllegroClientEntity allegroClient : allegroClients) {
                 if (deduplicatedClient.getLogin().equals(allegroClient.getLogin())) {
-                    this.deduplicatedClientDAO.saveAllegroId(deduplicatedClient, allegroClient.getId());
+                    this.deduplicatedClientDAO.updateAllegroId(deduplicatedClient, allegroClient.getId());
                 }
             }
         }
@@ -97,13 +97,13 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
     @Override
     public void deduplicateTableEntities() { //first step of deduplication
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
-                this.deduplicatedClientDAO.getDeduplicatedClients();
+                this.deduplicatedClientDAO.getListOfDeduplicatedClients();
         List<DeduplicatedClientEntity> listToCheck;
         for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
             listToCheck = this.deduplicatedClientDAO.getClientsByLogin(deduplicatedClient.getLogin());
             if (listToCheck.size() > 1) {
                 for (DeduplicatedClientEntity deduplicatedClientCheck : listToCheck.subList(1, listToCheck.size())) {
-                    this.deduplicatedClientDAO.deleteDuplicate(deduplicatedClientCheck);
+                    this.deduplicatedClientDAO.deleteDuplicatedRecords(deduplicatedClientCheck);
                 }
             }
         }
