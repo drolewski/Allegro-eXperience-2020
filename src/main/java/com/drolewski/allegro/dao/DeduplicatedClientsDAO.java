@@ -87,7 +87,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     }
 
     @Transactional
-    private void addChildClient(DeduplicatedClientEntity parent, AllegroClientEntity client){
+    private void addChildCompanyClient(DeduplicatedClientEntity parent, AllegroClientEntity client){
         DeduplicatedClientEntity individualClientParent = this.findIndividualParent(client);
         DeduplicatedClientEntity newDeduplicatedClient =
                 new DeduplicatedClientEntity(client.getId(), client.getNameSurname(),
@@ -95,7 +95,19 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                         client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
                         client.getAddress(), parent, individualClientParent);
         entityManager.persist(newDeduplicatedClient);
-        logger.info("addChildClient() - New Client with parent: " + newDeduplicatedClient.toString());
+        logger.info("addChildCompanyClient() - New Client with parent: " + newDeduplicatedClient.toString());
+    }
+
+    @Transactional
+    private void addChildIndividualClient(DeduplicatedClientEntity parent, AllegroClientEntity client){
+        DeduplicatedClientEntity companyClient = this.findCompanyParent(client);
+        DeduplicatedClientEntity newDeduplicatedClient =
+                new DeduplicatedClientEntity(client.getId(), client.getNameSurname(),
+                        client.getNip(), client.getCompanyName(), client.getEmail(),
+                        client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
+                        client.getAddress(), companyClient, parent);
+        entityManager.persist(newDeduplicatedClient);
+        logger.info("addChildIndividualClient() - New Client with parent: " + newDeduplicatedClient.toString());
     }
 
     @Transactional
@@ -121,7 +133,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
             }
         }
         if (!updated) {
-            this.addChildClient(parent, client);
+            this.addChildCompanyClient(parent, client);
         }
     }
 
@@ -218,7 +230,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
             }
         }
         if (!updated) {
-           this.addChildClient(parent, client);
+           this.addChildIndividualClient(parent, client);
         }
     }
 
