@@ -7,9 +7,10 @@ import java.util.List;
 
 public interface DeduplicatedClients {
     List<DeduplicatedClientEntity> getAllDeduplicatedClients();
+
     List<DeduplicatedClientEntity> getDeduplicatedClientsByNIP(String nip);
+
+    List<DeduplicatedClientEntity> getDeduplicatedClientsByNameSurname(String name);
+
     List<DeduplicatedClientEntity> importClients();
-    void deduplicateCompanyClient(AllegroClientEntity clients);
-    void updateAllegroId();
-    void deduplicateTableEntities();
 }

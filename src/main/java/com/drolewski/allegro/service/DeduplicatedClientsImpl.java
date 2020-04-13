@@ -35,6 +35,11 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
     }
 
     @Override
+    public List<DeduplicatedClientEntity> getDeduplicatedClientsByNameSurname(String name) {
+        return this.deduplicatedClientDAO.getClientsByNameSurname(name);
+    }
+
+    @Override
     public List<DeduplicatedClientEntity> importClients() {
         this.updateAllegroId();
         this.deduplicateTableEntities();
@@ -64,8 +69,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         }
     }
 
-    @Override
-    public void deduplicateCompanyClient(AllegroClientEntity client) {
+    private void deduplicateCompanyClient(AllegroClientEntity client) {
         if (this.deduplicatedClientDAO.isCompanyClientExist(client)) {
             logger.info("Exist parent client");
             this.deduplicatedClientDAO.updateOrAddCompanyClient(client);
@@ -78,8 +82,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         }
     }
 
-    @Override
-    public void updateAllegroId() { //second step of deduplication
+    private void updateAllegroId() {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getAccountsWithNULLAllegroId();
         List<AllegroClientEntity> allegroClients =
@@ -94,8 +97,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         }
     }
 
-    @Override
-    public void deduplicateTableEntities() { //first step of deduplication
+    private void deduplicateTableEntities() {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getListOfDeduplicatedClients();
         List<DeduplicatedClientEntity> listToCheck;
