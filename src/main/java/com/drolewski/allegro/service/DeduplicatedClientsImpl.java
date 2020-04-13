@@ -24,21 +24,39 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         this.deduplicatedClientDAO = deduplicatedClientDAO;
     }
 
+    /**
+     * @return      Full list of DeduplicatedClients without any conditional
+     * */
     @Override
     public List<DeduplicatedClientEntity> getAllDeduplicatedClients() {
-        return null;
+        return this.deduplicatedClientDAO.getListOfDeduplicatedClients();
     }
 
+    /**
+     * @param nip   Number of tax identification
+     * @return      List of DeduplicatedClients with condition on nip number
+     * */
     @Override
     public List<DeduplicatedClientEntity> getDeduplicatedClientsByNIP(String nip) {
         return this.deduplicatedClientDAO.getClientsByNIP(nip);
     }
 
+    /**
+     * @param name  Name and surname of client
+     * @return      List of DeduplicatedClients with condition on name_surname column
+     * */
     @Override
     public List<DeduplicatedClientEntity> getDeduplicatedClientsByNameSurname(String name) {
         return this.deduplicatedClientDAO.getClientsByNameSurname(name);
     }
 
+    /**
+     * Update AllegroId with proper values from imported data
+     * Delete duplicates in our database table
+     * Update Data in Database with imported changes
+     *
+     * @return      Full list of DeduplicatedClients
+     * */
     @Override
     public List<DeduplicatedClientEntity> importClients() {
         this.updateAllegroId();
@@ -53,9 +71,15 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
                 this.deduplicatedIndividualClient(client);
             }
         }
-        return this.deduplicatedClientDAO.getListOfDeduplicatedClients();
+        return this.getAllDeduplicatedClients();
     }
 
+    /**
+     * Individual Client
+     * Check data to be add as new object or update object which exists in our Database
+     *
+     * @param client Imported data object
+     * */
     private void deduplicatedIndividualClient(AllegroClientEntity client) {
         if (this.deduplicatedClientDAO.isIndividualClientExist(client)) {
             logger.info("Exist parent client");
@@ -69,6 +93,12 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         }
     }
 
+    /**
+     * Company Client
+     * Check data to be add as new object or update object which exists in our Database
+     *
+     * @param client Imported data object
+     * */
     private void deduplicateCompanyClient(AllegroClientEntity client) {
         if (this.deduplicatedClientDAO.isCompanyClientExist(client)) {
             logger.info("Exist parent client");
@@ -82,6 +112,9 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         }
     }
 
+    /**
+     * Update AllegroId column with null value
+     * */
     private void updateAllegroId() {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getAccountsWithNULLAllegroId();
@@ -97,6 +130,9 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
         }
     }
 
+    /**
+     * Delete duplicates from table
+     * */
     private void deduplicateTableEntities() {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getListOfDeduplicatedClients();
