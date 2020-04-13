@@ -23,8 +23,8 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Override
     public List<DeduplicatedClientEntity> getClientsByNameSurname(String nameSurname) {
         return entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
-                "name_surname LIKE :clientName")
-                .setParameter("clientName", nameSurname)
+                "UPPER(name_surname) LIKE :clientName")
+                .setParameter("clientName", nameSurname.toUpperCase())
                 .getResultList();
     }
 
@@ -61,53 +61,67 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     }
 
     @Transactional
+    private void updateClient(DeduplicatedClientEntity client, AllegroClientEntity allegroClient){
+        client.setNameSurname(allegroClient.getNameSurname());
+        client.setEmail(allegroClient.getEmail());
+        client.setCompanyName(allegroClient.getCompanyName());
+        client.setPhoneNumber1(allegroClient.getPhoneNumber1());
+        client.setPhoneNumber2(allegroClient.getPhoneNumber2());
+        client.setNip(allegroClient.getNip());
+        client.setAddress(allegroClient.getAddress());
+        client.setLogin(allegroClient.getLogin());
+        client.setAllegroId(allegroClient.getId());
+        logger.info("updateClient() - Updated Client: " + client.toString());
+    }
+
+    @Transactional
+    private void changeEmailToHistoric(DeduplicatedClientEntity client, AllegroClientEntity allegroClient){
+        client.setEmail("[HISTORIC]" + allegroClient.getEmail());
+        DeduplicatedClientEntity newDeduplicatedClient =
+                new DeduplicatedClientEntity(client.getAllegroId(), client.getNameSurname(),
+                        client.getNip(), client.getCompanyName(), client.getEmail(),
+                        client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
+                        client.getAddress(), client.getCompanyParent(), client.getIndividualParent());
+        entityManager.persist(newDeduplicatedClient);
+        logger.info("changeEmailToHistoric() - Update Email: " + client.toString());
+    }
+
+    @Transactional
+    private void addChildClient(DeduplicatedClientEntity parent, AllegroClientEntity client){
+        DeduplicatedClientEntity individualClientParent = this.findIndividualParent(client);
+        DeduplicatedClientEntity newDeduplicatedClient =
+                new DeduplicatedClientEntity(client.getId(), client.getNameSurname(),
+                        client.getNip(), client.getCompanyName(), client.getEmail(),
+                        client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
+                        client.getAddress(), parent, individualClientParent);
+        entityManager.persist(newDeduplicatedClient);
+        logger.info("addChildClient() - New Client with parent: " + newDeduplicatedClient.toString());
+    }
+
+    @Transactional
     @Override
     public void updateOrAddCompanyClient(AllegroClientEntity client) {
-        List<DeduplicatedClientEntity> queryResultList =
-                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
-                        "REPLACE(nip, '-', '') LIKE :clientNIP ORDER BY id")
-                        .setParameter("clientNIP", client.getNip().replaceAll("-", ""))
-                        .getResultList();
+        List<DeduplicatedClientEntity> queryResultList = this.getClientsByNIP(client.getNip());
         DeduplicatedClientEntity parent = null;
         boolean updated = false;
-        for (DeduplicatedClientEntity clientFromDb : queryResultList) {
-            if (client.getId().equals(clientFromDb.getAllegroId())||
-                    (client.getLogin().equals(clientFromDb.getLogin()) &&
-                            clientFromDb.getAllegroId() == null)) {
-                clientFromDb.setNameSurname(client.getNameSurname());
-                clientFromDb.setCompanyName(client.getCompanyName());
-                clientFromDb.setPhoneNumber1(client.getPhoneNumber1());
-                clientFromDb.setPhoneNumber2(client.getPhoneNumber2());
-                clientFromDb.setAddress(client.getAddress());
-                clientFromDb.setLogin(client.getLogin());
-
-                logger.info("updateOrAddCompanyClient() - Updated Client: " + clientFromDb.toString());
+        for (DeduplicatedClientEntity deduplicatedClient : queryResultList) {
+            if (client.getId().equals(deduplicatedClient.getAllegroId())||
+                    (client.getLogin().equals(deduplicatedClient.getLogin()) &&
+                            deduplicatedClient.getAllegroId() == null)) {
+                this.updateClient(deduplicatedClient, client);
                 updated = true;
             }
-            if (clientFromDb.getEmail().equals(client.getEmail()) &&
-                    (!client.getId().equals(clientFromDb.getAllegroId()) ||
-                            !client.getLogin().equals(clientFromDb.getLogin()))) {
-                clientFromDb.setEmail("[HISTORIC]" + client.getEmail());
-                DeduplicatedClientEntity newDeduplicatedClient =
-                        new DeduplicatedClientEntity(clientFromDb.getAllegroId(), clientFromDb.getNameSurname(),
-                                clientFromDb.getNip(), clientFromDb.getCompanyName(), clientFromDb.getEmail(),
-                                clientFromDb.getPhoneNumber1(), clientFromDb.getPhoneNumber2(), clientFromDb.getLogin(),
-                                clientFromDb.getAddress(), clientFromDb.getCompanyParent(), clientFromDb.getIndividualParent());
-                entityManager.persist(newDeduplicatedClient);
+            if (deduplicatedClient.getEmail().equals(client.getEmail()) &&
+                    (!client.getId().equals(deduplicatedClient.getAllegroId()) ||
+                            !client.getLogin().equals(deduplicatedClient.getLogin()))) {
+                this.changeEmailToHistoric(deduplicatedClient, client);
             }
-            if (clientFromDb.getCompanyParent() == null) {
-                parent = clientFromDb;
+            if (deduplicatedClient.getCompanyParent() == null) {
+                parent = deduplicatedClient;
             }
         }
         if (!updated) {
-            DeduplicatedClientEntity individualClientParent = this.findIndividualParent(client);
-            DeduplicatedClientEntity newDeduplicatedClient =
-                    new DeduplicatedClientEntity(client.getId(), client.getNameSurname(),
-                            client.getNip(), client.getCompanyName(), client.getEmail(),
-                            client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
-                            client.getAddress(), parent, individualClientParent);
-            entityManager.persist(newDeduplicatedClient);
-            logger.info("updateOrAddCompanyClient() - New Client with parent: " + newDeduplicatedClient.toString());
+            this.addChildClient(parent, client);
         }
     }
 
@@ -125,7 +139,8 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Transactional
     @Override
     public void addNewCRMClient(AllegroClientEntity client) throws SQLDataException {
-        int resultSize = entityManager.createQuery("FROM DeduplicatedClientEntity WHERE allegro_id = :clientAllegroId")
+        int resultSize = entityManager.createQuery("FROM DeduplicatedClientEntity " +
+                "WHERE allegro_id = :clientAllegroId")
                 .setParameter("clientAllegroId", client.getId())
                 .getResultList().size();
         if (resultSize == 0) {
@@ -182,53 +197,28 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Transactional
     @Override
     public void updateOrAddIndividualClient(AllegroClientEntity client) {
-        List<DeduplicatedClientEntity> deduplicatedClientsEntities =
-                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
-                        "UPPER(name_surname) LIKE :clientName  ORDER BY id")
-                        .setParameter("clientName", "%" + client.getNameSurname().toUpperCase() + "%")
-                        .getResultList();
+        List<DeduplicatedClientEntity> deduplicatedClientsEntities = this.getClientsByNameSurname(client.getNameSurname());
         boolean updated = false;
         DeduplicatedClientEntity parent = null;
         for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
             if (client.getId().equals(deduplicatedClient.getAllegroId()) ||
                     (client.getLogin().equals(deduplicatedClient.getLogin()) &&
                             deduplicatedClient.getAllegroId() == null)) {
-                deduplicatedClient.setNip(client.getNip());
-                deduplicatedClient.setNameSurname(client.getNameSurname());
-                deduplicatedClient.setCompanyName(client.getCompanyName());
-                deduplicatedClient.setPhoneNumber1(client.getPhoneNumber1());
-                deduplicatedClient.setPhoneNumber2(client.getPhoneNumber2());
-                deduplicatedClient.setAddress(client.getAddress());
-                deduplicatedClient.setLogin(client.getLogin());
-                deduplicatedClient.setEmail(client.getEmail());
 
-                logger.info("updateOrAddIndividualClient() - Updated Client: " + deduplicatedClient.toString());
+                this.updateClient(deduplicatedClient, client);
                 updated = true;
             }
             if (deduplicatedClient.getEmail().equals(client.getEmail()) &&
                     (!client.getId().equals(deduplicatedClient.getAllegroId()) ||
                             !client.getLogin().equals(deduplicatedClient.getLogin()))) {
-                deduplicatedClient.setEmail("[HISTORIC]" + client.getEmail());
-                DeduplicatedClientEntity newDeduplicatedClient =
-                        new DeduplicatedClientEntity(deduplicatedClient.getAllegroId(), deduplicatedClient.getNameSurname(),
-                                deduplicatedClient.getNip(), deduplicatedClient.getCompanyName(), deduplicatedClient.getEmail(),
-                                deduplicatedClient.getPhoneNumber1(), deduplicatedClient.getPhoneNumber2(), deduplicatedClient.getLogin(),
-                                deduplicatedClient.getAddress(), deduplicatedClient.getCompanyParent(), deduplicatedClient.getIndividualParent());
-                entityManager.persist(newDeduplicatedClient);
+                this.changeEmailToHistoric(deduplicatedClient, client);
             }
             if (deduplicatedClient.getIndividualParent() == null) {
                 parent = deduplicatedClient;
             }
         }
         if (!updated) {
-            DeduplicatedClientEntity companyParent = this.findCompanyParent(client);
-            DeduplicatedClientEntity newDeduplicatedClient =
-                    new DeduplicatedClientEntity(client.getId(), client.getNameSurname(),
-                            client.getNip(), client.getCompanyName(), client.getEmail(),
-                            client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
-                            client.getAddress(), companyParent, parent);
-            entityManager.persist(newDeduplicatedClient);
-            logger.info("updateOrAddIndividualClient() - New Client with parent: " + newDeduplicatedClient.toString());
+           this.addChildClient(parent, client);
         }
     }
 
