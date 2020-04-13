@@ -4,15 +4,15 @@ import groovy.sql.Sql
 import spock.lang.Shared
 import spock.lang.Specification
 
-class ConnectionTest extends Specification{
+class ConnectionTest extends Specification {
 
     @Shared
     Sql sql
 
-    def setupSpec(){
+    def setupSpec() {
         sql = Sql.newInstance('jdbc:mysql://localhost:3306/allegro?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC',
-        'root',
-        'dominik4')
+                'root',
+                'dominik4')
         sql.execute("""
             INSERT INTO allegro_client_deduplicated(
             name_surname, nip, company_name, email, phone_number1, 
@@ -22,7 +22,7 @@ class ConnectionTest extends Specification{
             """)
     }
 
-    def cleanupSpec(){
+    def cleanupSpec() {
         sql.execute("""
             DELETE FROM allegro_client_deduplicated WHERE name_surname = 'Test' AND 
             nip = 'test' AND company_name = 'test' AND email = 'test@test.test' AND 
@@ -30,7 +30,7 @@ class ConnectionTest extends Specification{
             """)
     }
 
-    def "database connection test"(){
+    def "database connection test"() {
         when:
         def row = sql.firstRow("""
             SELECT * FROM allegro_client_deduplicated WHERE
