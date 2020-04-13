@@ -22,7 +22,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
 
     @Override
     public List<DeduplicatedClientEntity> getClientsByNameSurname(String nameSurname) {
-        return entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+        return entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                 "name_surname LIKE :clientName")
                 .setParameter("clientName", nameSurname)
                 .getResultList();
@@ -31,27 +31,27 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Override
     public List<DeduplicatedClientEntity> getClientsByNIP(String nip) {
         return (List<DeduplicatedClientEntity>) entityManager.createQuery(
-                "FROM DeduplicatedClientsEntity WHERE nip LIKE :nipVar")
+                "FROM DeduplicatedClientEntity WHERE nip LIKE :nipVar")
                 .setParameter("nipVar", nip)
                 .getResultList();
     }
 
     @Override
     public List<DeduplicatedClientEntity> getClientsByLogin(String login) {
-        return entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE login LIKE :clientLogin")
+        return entityManager.createQuery("FROM DeduplicatedClientEntity WHERE login LIKE :clientLogin")
                 .setParameter("clientLogin", login)
                 .getResultList();
     }
 
     @Override
     public List<DeduplicatedClientEntity> getListOfDeduplicatedClients() {
-        return entityManager.createQuery("FROM DeduplicatedClientsEntity").getResultList();
+        return entityManager.createQuery("FROM DeduplicatedClientEntity").getResultList();
     }
 
     @Override
     public boolean isCompanyClientExist(AllegroClientEntity client) {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
-                entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                         "REPLACE(nip, '-', '') LIKE :clientNIP " +
                         "AND company_parent = NULL")
                         .setParameter("clientNIP", client.getNip().replaceAll("-", ""))
@@ -64,14 +64,16 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Override
     public void updateOrAddCompanyClient(AllegroClientEntity client) {
         List<DeduplicatedClientEntity> queryResultList =
-                entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                         "REPLACE(nip, '-', '') LIKE :clientNIP ORDER BY id")
                         .setParameter("clientNIP", client.getNip().replaceAll("-", ""))
                         .getResultList();
         DeduplicatedClientEntity parent = null;
         boolean updated = false;
         for (DeduplicatedClientEntity clientFromDb : queryResultList) {
-            if (clientFromDb.getAllegroId().equals(client.getId())) {
+            if (client.getId().equals(clientFromDb.getAllegroId())||
+                    (client.getLogin().equals(clientFromDb.getLogin()) &&
+                            clientFromDb.getAllegroId() == null)) {
                 clientFromDb.setNameSurname(client.getNameSurname());
                 clientFromDb.setCompanyName(client.getCompanyName());
                 clientFromDb.setPhoneNumber1(client.getPhoneNumber1());
@@ -83,7 +85,8 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 updated = true;
             }
             if (clientFromDb.getEmail().equals(client.getEmail()) &&
-                    !clientFromDb.getAllegroId().equals(client.getId())) {
+                    (!client.getId().equals(clientFromDb.getAllegroId()) ||
+                            !client.getLogin().equals(clientFromDb.getLogin()))) {
                 clientFromDb.setEmail("[HISTORIC]" + client.getEmail());
                 DeduplicatedClientEntity newDeduplicatedClient =
                         new DeduplicatedClientEntity(clientFromDb.getAllegroId(), clientFromDb.getNameSurname(),
@@ -110,19 +113,19 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
 
     @Transactional
     public DeduplicatedClientEntity findIndividualParent(AllegroClientEntity client) {
-        List<DeduplicatedClientEntity> result = entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+        List<DeduplicatedClientEntity> result = entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                 "UPPER(name_surname) LIKE :clientName " +
                 "AND individual_parent = NULL")
                 .setParameter("clientName", "%" + client.getNameSurname().toUpperCase() + "%")
                 .getResultList();
-        logger.info("findIndividualParent() - Individual client parent: " + result.get(0));
+        logger.info("findIndividualParent() - Individual client parent");
         return result.size() > 0 ? result.get(0) : null;
     }
 
     @Transactional
     @Override
     public void addNewCRMClient(AllegroClientEntity client) throws SQLDataException {
-        int resultSize = entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE allegro_id = :clientAllegroId")
+        int resultSize = entityManager.createQuery("FROM DeduplicatedClientEntity WHERE allegro_id = :clientAllegroId")
                 .setParameter("clientAllegroId", client.getId())
                 .getResultList().size();
         if (resultSize == 0) {
@@ -143,7 +146,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
 
     @Override
     public List<DeduplicatedClientEntity> getAccountsWithNULLAllegroId() {
-        return entityManager.createQuery("FROM DeduplicatedClientsEntity where allegroId = null")
+        return entityManager.createQuery("FROM DeduplicatedClientEntity where allegroId = null")
                 .getResultList();
     }
 
@@ -167,7 +170,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Override
     public boolean isIndividualClientExist(AllegroClientEntity client) {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
-                entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                         "UPPER(name_surname) LIKE :clientName " +
                         "AND individual_parent = NULL")
                         .setParameter("clientName", "%" + client.getNameSurname().toUpperCase() + "%")
@@ -180,14 +183,16 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Override
     public void updateOrAddIndividualClient(AllegroClientEntity client) {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
-                entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                         "UPPER(name_surname) LIKE :clientName  ORDER BY id")
                         .setParameter("clientName", "%" + client.getNameSurname().toUpperCase() + "%")
                         .getResultList();
         boolean updated = false;
         DeduplicatedClientEntity parent = null;
         for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
-            if (deduplicatedClient.getAllegroId().equals(client.getId())) {
+            if (client.getId().equals(deduplicatedClient.getAllegroId()) ||
+                    (client.getLogin().equals(deduplicatedClient.getLogin()) &&
+                            deduplicatedClient.getAllegroId() == null)) {
                 deduplicatedClient.setNip(client.getNip());
                 deduplicatedClient.setNameSurname(client.getNameSurname());
                 deduplicatedClient.setCompanyName(client.getCompanyName());
@@ -201,7 +206,8 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 updated = true;
             }
             if (deduplicatedClient.getEmail().equals(client.getEmail()) &&
-                    !deduplicatedClient.getAllegroId().equals(client.getId())) {
+                    (!client.getId().equals(deduplicatedClient.getAllegroId()) ||
+                            !client.getLogin().equals(deduplicatedClient.getLogin()))) {
                 deduplicatedClient.setEmail("[HISTORIC]" + client.getEmail());
                 DeduplicatedClientEntity newDeduplicatedClient =
                         new DeduplicatedClientEntity(deduplicatedClient.getAllegroId(), deduplicatedClient.getNameSurname(),
@@ -228,12 +234,12 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
 
     @Transactional
     private DeduplicatedClientEntity findCompanyParent(AllegroClientEntity client) {
-        List<DeduplicatedClientEntity> result = entityManager.createQuery("FROM DeduplicatedClientsEntity WHERE " +
+        List<DeduplicatedClientEntity> result = entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
                 "REPLACE(nip, '-', '') LIKE :clientNIP " +
                 "AND company_parent = NULL")
                 .setParameter("clientNIP", client.getNip())
                 .getResultList();
-        logger.info("findCompanyParent() - Individual client parent: " + result.get(0));
+        logger.info("findCompanyParent() - Individual client parent");
         return result.size() > 0 ? result.get(0) : null;
     }
 }
