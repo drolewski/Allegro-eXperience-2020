@@ -56,7 +56,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                         "AND company_parent = NULL")
                         .setParameter("clientNIP", client.getNip().replaceAll("-", ""))
                         .getResultList();
-        logger.info("List Size: " + deduplicatedClientsEntities.size());
+        logger.info("isCompanyClientExist() - List Size: " + deduplicatedClientsEntities.size());
         return deduplicatedClientsEntities.size() > 0;
     }
 
@@ -79,7 +79,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 clientFromDb.setAddress(client.getAddress());
                 clientFromDb.setLogin(client.getLogin());
 
-                logger.info("Updated Client: " + clientFromDb.toString());
+                logger.info("updateOrAddCompanyClient() - Updated Client: " + clientFromDb.toString());
                 updated = true;
             }
             if (clientFromDb.getEmail().equals(client.getEmail()) &&
@@ -104,7 +104,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                             client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
                             client.getAddress(), parent, individualClientParent);
             entityManager.persist(newDeduplicatedClient);
-            logger.info("New Client with parent: " + newDeduplicatedClient.toString());
+            logger.info("updateOrAddCompanyClient() - New Client with parent: " + newDeduplicatedClient.toString());
         }
     }
 
@@ -115,7 +115,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 "AND individual_parent = NULL")
                 .setParameter("clientName", "%" + client.getNameSurname().toUpperCase() + "%")
                 .getResultList();
-        logger.info("size of individual parents: " + result.size());
+        logger.info("findIndividualParent() - Individual client parent: " + result.get(0));
         return result.size() > 0 ? result.get(0) : null;
     }
 
@@ -135,7 +135,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                     );
             entityManager.persist(newDeduplicatedClient);
 
-            logger.info("New Client without parent: " + newDeduplicatedClient.toString());
+            logger.info("addNewCRMClient() - New Parent Client: " + newDeduplicatedClient.toString());
             return;
         }
         throw new SQLDataException("Constraints Error: Allegro Client Id already exists in DB");
@@ -150,6 +150,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Transactional
     @Override
     public void updateAllegroId(DeduplicatedClientEntity deduplicatedClient, Integer allegroId) {
+        logger.info("updateAllegroId() - Update AllegroId: " + allegroId + " on: " + deduplicatedClient.toString());
         deduplicatedClient.setAllegroId(allegroId);
         entityManager.persist(deduplicatedClient);
     }
@@ -158,6 +159,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
     @Override
     public void deleteDuplicatedRecords(DeduplicatedClientEntity deduplicatedClientCheck) {
         if (entityManager.contains(deduplicatedClientCheck)) {
+            logger.info("deleteDuplicatedRecords() - Delete from Database: " + deduplicatedClientCheck.toString());
             entityManager.remove(deduplicatedClientCheck);
         }
     }
@@ -170,7 +172,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                         "AND individual_parent = NULL")
                         .setParameter("clientName", "%" + client.getNameSurname().toUpperCase() + "%")
                         .getResultList();
-        logger.info("List Size: " + deduplicatedClientsEntities.size());
+        logger.info("isIndividualClientExist() - List Size: " + deduplicatedClientsEntities.size());
         return deduplicatedClientsEntities.size() > 0;
     }
 
@@ -185,7 +187,6 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
         boolean updated = false;
         DeduplicatedClientEntity parent = null;
         for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
-            logger.info("object of individual client: " + deduplicatedClient.toString());
             if (deduplicatedClient.getAllegroId().equals(client.getId())) {
                 deduplicatedClient.setNip(client.getNip());
                 deduplicatedClient.setNameSurname(client.getNameSurname());
@@ -196,7 +197,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 deduplicatedClient.setLogin(client.getLogin());
                 deduplicatedClient.setEmail(client.getEmail());
 
-                logger.info("Updated Client: " + deduplicatedClient.toString());
+                logger.info("updateOrAddIndividualClient() - Updated Client: " + deduplicatedClient.toString());
                 updated = true;
             }
             if (deduplicatedClient.getEmail().equals(client.getEmail()) &&
@@ -221,7 +222,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                             client.getPhoneNumber1(), client.getPhoneNumber2(), client.getLogin(),
                             client.getAddress(), companyParent, parent);
             entityManager.persist(newDeduplicatedClient);
-            logger.info("New Client with parent: " + newDeduplicatedClient.toString());
+            logger.info("updateOrAddIndividualClient() - New Client with parent: " + newDeduplicatedClient.toString());
         }
     }
 
@@ -232,6 +233,7 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 "AND company_parent = NULL")
                 .setParameter("clientNIP", client.getNip())
                 .getResultList();
+        logger.info("findCompanyParent() - Individual client parent: " + result.get(0));
         return result.size() > 0 ? result.get(0) : null;
     }
 }
