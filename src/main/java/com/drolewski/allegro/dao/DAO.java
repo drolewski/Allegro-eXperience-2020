@@ -86,4 +86,10 @@ public interface DAO<T> {
      * @param deduplicatedClientCheck parameter with generic T type to describe client to delete
      * */
     void deleteDuplicatedRecords(T deduplicatedClientCheck);
+
+    /**
+     * Update Historical Emails in CRM
+     * @param client AllegroClientEntity
+    * */
+    void updateHistoricEmails(AllegroClientEntity client);
 }

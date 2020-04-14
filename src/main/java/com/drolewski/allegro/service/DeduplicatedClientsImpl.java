@@ -70,9 +70,18 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
                 logger.info("Individual client: " + client.toString());
                 this.deduplicatedIndividualClient(client);
             }
+            this.updateHistoricEmails(client);
         }
         this.deduplicateTableEntities();
         return this.getAllDeduplicatedClients();
+    }
+
+    /**
+     * Update value of email column if email in CRM is duplicated
+     * @param client AllegroClientEntity
+     * */
+    private void updateHistoricEmails(AllegroClientEntity client) {
+        this.deduplicatedClientDAO.updateHistoricEmails(client);
     }
 
     /**

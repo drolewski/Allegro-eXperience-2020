@@ -127,12 +127,6 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
                 this.updateClient(deduplicatedClient, client);
                 updated = true;
             }
-            if (deduplicatedClient.getEmail().equals(client.getEmail()) &&
-                    (!client.getId().equals(deduplicatedClient.getAllegroId()) ||
-                            !client.getLogin().equals(deduplicatedClient.getLogin()))
-                    && !deduplicatedClient.getEmail().contains("[HISTORIC]")) {
-                this.changeEmailToHistoric(deduplicatedClient, client);
-            }
             if (deduplicatedClient.getCompanyParent() == null) {
                 parent = deduplicatedClient;
             }
@@ -199,6 +193,20 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
         }
     }
 
+    @Transactional
+    @Override
+    public void updateHistoricEmails(AllegroClientEntity allegroClient) {
+        List<DeduplicatedClientEntity> deduplicatedClients = this.getListOfDeduplicatedClients();
+        for(DeduplicatedClientEntity client: deduplicatedClients){
+            if (client.getEmail().equals(allegroClient.getEmail()) &&
+                    (!allegroClient.getId().equals(client.getAllegroId()) ||
+                            !allegroClient.getLogin().equals(client.getLogin()))
+                    && !client.getEmail().contains("[HISTORIC]")) {
+                this.changeEmailToHistoric(client, allegroClient);
+            }
+        }
+    }
+
     @Override
     public boolean isIndividualClientExist(AllegroClientEntity client) {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
@@ -224,12 +232,6 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
 
                 this.updateClient(deduplicatedClient, client);
                 updated = true;
-            }
-            if (deduplicatedClient.getEmail().equals(client.getEmail()) &&
-                    (!client.getId().equals(deduplicatedClient.getAllegroId()) ||
-                            !client.getLogin().equals(deduplicatedClient.getLogin()))
-                    && !deduplicatedClient.getEmail().contains("[HISTORIC]")) {
-                this.changeEmailToHistoric(deduplicatedClient, client);
             }
             if (deduplicatedClient.getIndividualParent() == null) {
                 parent = deduplicatedClient;
