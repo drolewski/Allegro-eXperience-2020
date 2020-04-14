@@ -29,8 +29,8 @@ dependencies {
 	testRuntime 'net.bytebuddy:byte-buddy:1.9.3'
 	testRuntime 'org.objenesis:objenesis:2.6'
 
+	implementation 'org.slf4j:slf4j-parent:1.7.30'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
 	implementation 'org.springframework.boot:spring-boot-starter-groovy-templates'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
