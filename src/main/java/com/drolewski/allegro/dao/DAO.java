@@ -92,4 +92,16 @@ public interface DAO<T> {
      * @param client AllegroClientEntity
     * */
     void updateHistoricEmails(AllegroClientEntity client);
+
+    /**
+     * Connect Company clients if they does not exist in Allegro database
+     * @param deduplicatedClient T type parameter
+     * */
+    void connectCompanyCRMClient(T deduplicatedClient);
+
+    /**
+     * Connect Individual clients if they does not exist in Allegro database
+     * @param deduplicatedClient T type parameter
+     * */
+    void connectIndividualCRMClient(T deduplicatedClient);
 }

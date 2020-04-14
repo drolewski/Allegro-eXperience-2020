@@ -59,9 +59,9 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
      * */
     @Override
     public List<DeduplicatedClientEntity> importClients() {
-        this.updateAllegroId();
-        this.deduplicateTableEntities();
         List<AllegroClientEntity> allegroClients = this.allegroClientService.getRawAllegroClients();
+        this.updateAllegroId(allegroClients);
+        this.deduplicateTableEntities();
         for (AllegroClientEntity client : allegroClients) {
             if (client.getNip() != null) {
                 logger.info("Company client: " + client.getId());
@@ -124,19 +124,28 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
 
     /**
      * Update AllegroId column with null value
+     * And connect clients in CRM if they does not exist in Allegro database
+     * @param allegroClientEntityList List of Allegro Clients
      * */
-    private void updateAllegroId() {
+    private void updateAllegroId(List<AllegroClientEntity> allegroClientEntityList) {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
                 this.deduplicatedClientDAO.getAccountsWithNULLAllegroId();
-        List<AllegroClientEntity> allegroClients =
-                this.allegroClientService.getRawAllegroClients();
-
+        boolean flag = false;
         for (DeduplicatedClientEntity deduplicatedClient : deduplicatedClientsEntities) {
-            for (AllegroClientEntity allegroClient : allegroClients) {
+            for (AllegroClientEntity allegroClient : allegroClientEntityList) {
                 if (deduplicatedClient.getLogin().equals(allegroClient.getLogin())) {
                     this.deduplicatedClientDAO.updateAllegroId(deduplicatedClient, allegroClient.getId());
+                    flag = true;
                 }
             }
+            if (!flag){
+                if(deduplicatedClient.getNip() != null){
+                    this.deduplicatedClientDAO.connectCompanyCRMClient(deduplicatedClient);
+                }else{
+                    this.deduplicatedClientDAO.connectIndividualCRMClient(deduplicatedClient);
+                }
+            }
+            flag = false;
         }
     }
 

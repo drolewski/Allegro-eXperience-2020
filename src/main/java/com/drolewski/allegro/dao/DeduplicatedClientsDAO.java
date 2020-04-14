@@ -207,6 +207,36 @@ public class DeduplicatedClientsDAO implements DAO<DeduplicatedClientEntity> {
         }
     }
 
+    @Transactional
+    @Override
+    public void connectCompanyCRMClient(DeduplicatedClientEntity deduplicatedClient) {
+        List<DeduplicatedClientEntity> listOfClients =
+                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
+                        "nip LIKE :clientNip AND allegro_id = null")
+                .setParameter("clientNip", deduplicatedClient.getNip())
+                .getResultList();
+        if(listOfClients.size() > 1){
+            for(int i = 1; i < listOfClients.size(); i++){
+                listOfClients.get(i).setCompanyParent(listOfClients.get(0));
+            }
+        }
+    }
+
+    @Transactional
+    @Override
+    public void connectIndividualCRMClient(DeduplicatedClientEntity deduplicatedClient) {
+        List<DeduplicatedClientEntity> listOfClients =
+                entityManager.createQuery("FROM DeduplicatedClientEntity WHERE " +
+                        "name_surname LIKE :clientName AND allegro_id = null")
+                        .setParameter("clientName", deduplicatedClient.getNameSurname())
+                        .getResultList();
+        if(listOfClients.size() > 1){
+            for(int i = 1; i < listOfClients.size(); i++){
+                listOfClients.get(i).setIndividualParent(listOfClients.get(0));
+            }
+        }
+    }
+
     @Override
     public boolean isIndividualClientExist(AllegroClientEntity client) {
         List<DeduplicatedClientEntity> deduplicatedClientsEntities =
