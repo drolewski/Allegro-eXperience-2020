@@ -15,9 +15,10 @@ class DeduplicatedClientsService extends Specification{
     def deduplicatedClientRepository = Mock(DAO)
     def deduplicatedClientService = new DeduplicatedClientsImpl(allegroClientService, deduplicatedClientRepository)
     @Shared
-    def listOfDeduplicatedClients = new ArrayList<>()
+    def listOfDeduplicatedClients
 
-    def setupSpec(){
+    def setup(){
+        listOfDeduplicatedClients = new ArrayList<>()
         listOfDeduplicatedClients << new DeduplicatedClientEntity(
                 1, 'test1', 'test1', 'test1', 'test1', 'test1',
                 'test1', 'test1', 'test1', null, null)
