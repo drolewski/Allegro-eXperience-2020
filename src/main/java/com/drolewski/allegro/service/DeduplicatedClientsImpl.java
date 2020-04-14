@@ -71,6 +71,7 @@ public class DeduplicatedClientsImpl implements DeduplicatedClients {
                 this.deduplicatedIndividualClient(client);
             }
         }
+        this.deduplicateTableEntities();
         return this.getAllDeduplicatedClients();
     }
 
