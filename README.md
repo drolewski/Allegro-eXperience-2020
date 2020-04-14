@@ -3,11 +3,11 @@ Software Engineer (CRM) - Intern
 
 # Struktura danych
 Dane pobierane z przykładowej tabeli `allegro_clients`, która tworzona jest przez wywołanie
-komend SQL przedstawionych w pliku [allegroClient.sql](). Struktura ta nie posiada hierarchii
+komend SQL przedstawionych w pliku [allegroClient.sql](https://github.com/drolewski/Allegro-eXperience-2020/blob/master/src/main/resources/static/allegroClient.sql). Struktura ta nie posiada hierarchii
 i podziału na klientów firmowych i indywidualnych. Dane z tej struktury są pobierane
 w całości jako surowe nieobrobione recordy tabeli.
 Następnie zapisywane są do tabeli `allegro_client_deduplicated` utworzonej na podstawie
-skryptu [allegroClient.sql](). Dane w tej tabeli przechowywane są w sposób hierarchiczny.
+skryptu [allegroClient.sql](https://github.com/drolewski/Allegro-eXperience-2020/blob/master/src/main/resources/static/deduplicatedClients.sql). Dane w tej tabeli przechowywane są w sposób hierarchiczny.
 Istnieją dwa klucze obce, które przechowują identyfikator swojego rodzica, czyli np.
 pierwszy rekord firmy z danym numerem NIP. 
 Dzięki takiej strukturyzacji w łatwy sposób jestem w stanie pobierać informacje na
