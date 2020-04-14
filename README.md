@@ -7,7 +7,7 @@ komend SQL przedstawionych w pliku [allegroClient.sql](https://github.com/drolew
 i podziału na klientów firmowych i indywidualnych. Dane z tej struktury są pobierane
 w całości jako surowe nieobrobione recordy tabeli.
 Następnie zapisywane są do tabeli `allegro_client_deduplicated` utworzonej na podstawie
-skryptu [allegroClient.sql](https://github.com/drolewski/Allegro-eXperience-2020/blob/master/src/main/resources/static/deduplicatedClients.sql). Dane w tej tabeli przechowywane są w sposób hierarchiczny.
+skryptu [deduplicatedClients.sql](https://github.com/drolewski/Allegro-eXperience-2020/blob/master/src/main/resources/static/deduplicatedClients.sql). Dane w tej tabeli przechowywane są w sposób hierarchiczny.
 Istnieją dwa klucze obce, które przechowują identyfikator swojego rodzica, czyli np.
 pierwszy rekord firmy z danym numerem NIP. 
 Dzięki takiej strukturyzacji w łatwy sposób jestem w stanie pobierać informacje na
